@@ -18,7 +18,7 @@ export function AppLayout({ children, activeTab, onTabChange }: AppLayoutProps) 
       {/* Header */}
       <header className="bg-blue-600 text-white py-4 px-6 shadow-md">
         <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <h1 className="text-2xl font-bold mb-4 sm:mb-0">Keyboard Shortcut Visualizer</h1>
+          <h1 className="text-2xl font-bold mb-4 sm:mb-0">KeyMapper</h1>
           <Button 
             onClick={handleAddShortcut}
             className="bg-white text-blue-600 hover:bg-blue-100"
@@ -41,7 +41,7 @@ export function AppLayout({ children, activeTab, onTabChange }: AppLayoutProps) 
       {/* Footer */}
       <footer className="bg-gray-100 py-4 px-6 border-t">
         <div className="container mx-auto text-center text-gray-600 text-sm">
-          <p>© {new Date().getFullYear()} Keyboard Shortcut Visualizer. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} KeyMapper. All rights reserved.</p>
         </div>
       </footer>
     </div>
