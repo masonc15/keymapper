@@ -11,6 +11,7 @@ interface KeyCombinationInputProps {
   disabled?: boolean;
   className?: string;
   placeholder?: string;
+  isMobile?: boolean;
 }
 
 export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
@@ -21,6 +22,7 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
   disabled = false,
   className = '',
   placeholder = 'Press a key combination',
+  isMobile = false,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -101,8 +103,9 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
     <div className="relative">
       <div
         className={cn(
-          'flex items-center justify-between px-3 py-2 w-full rounded-md border bg-white text-sm ring-offset-white',
-          isFocused && `ring-2 ring-offset-2 ${getRingClass()}`,
+          'flex items-center justify-between px-3 py-2 w-full rounded-md border bg-white ring-offset-white',
+          isMobile ? 'text-xs h-9' : 'text-sm',
+          isFocused && `ring-2 ${isMobile ? '' : 'ring-offset-2'} ${getRingClass()}`,
           isRecording && 'bg-blue-50 border-blue-300',
           getBorderClass(),
           disabled && 'opacity-50 cursor-not-allowed',
@@ -140,8 +143,8 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
             <div className="mr-1 text-amber-500">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width={isMobile ? "14" : "16"}
+                height={isMobile ? "14" : "16"}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -166,13 +169,13 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
                 e.stopPropagation();
                 clearInput();
               }}
-              className="h-6 px-2 text-gray-400 hover:text-gray-600"
+              className={`${isMobile ? 'h-7 w-7 p-0' : 'h-6 px-2'} text-gray-400 hover:text-gray-600`}
               aria-label="Clear key combination"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width={isMobile ? "14" : "16"}
+                height={isMobile ? "14" : "16"}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -186,7 +189,7 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
             </Button>
           )}
           
-          {/* Record button */}
+          {/* Record button - more compact on mobile */}
           {!disabled && (
             <Button
               type="button"
@@ -197,11 +200,14 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
                 startRecording();
               }}
               className={cn(
-                "h-6 text-xs",
+                isMobile ? "h-7 text-[10px] px-2" : "h-6 text-xs",
                 isRecording && "bg-blue-600 text-white"
               )}
             >
-              {isRecording ? "Recording..." : "Record"}
+              {isRecording 
+                ? (isMobile ? "Rec..." : "Recording...") 
+                : "Record"
+              }
             </Button>
           )}
         </div>
@@ -209,8 +215,8 @@ export const KeyCombinationInput: React.FC<KeyCombinationInputProps> = ({
       
       {/* Helper text */}
       {isRecording && (
-        <p className="mt-1 text-xs text-blue-600">
-          Press a key combination (e.g., ⌘+A, ⌃+⌥+Delete)
+        <p className={`mt-1 ${isMobile ? 'text-[10px]' : 'text-xs'} text-blue-600`}>
+          Press a key combination (e.g., ⌘+A, ⌃+⌥+Del)
         </p>
       )}
     </div>
