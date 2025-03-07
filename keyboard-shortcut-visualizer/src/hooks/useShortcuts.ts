@@ -1,6 +1,6 @@
 import { useContext } from 'react';
-import { ShortcutContext } from '../contexts/ShortcutContext';
-import { Shortcut } from '../types/shortcut';
+import { ShortcutContext } from '@/contexts/ShortcutContext';
+import { Shortcut } from '@/types/shortcut';
 
 /**
  * Custom hook to access the ShortcutContext
