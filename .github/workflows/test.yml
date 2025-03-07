@@ -21,7 +21,10 @@ jobs:
           cache: 'npm'
           
       - name: Install dependencies 📦
-        run: npm ci
+        run: |
+          # Using npm install instead of npm ci to work around rollup dependency issues
+          rm -rf node_modules
+          npm install
         
       - name: Lint 🔍
         run: npm run lint

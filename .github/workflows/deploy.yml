@@ -20,7 +20,9 @@ jobs:
           
       - name: Install and Build
         run: |
-          npm ci
+          # Using npm install instead of npm ci to work around rollup dependency issues
+          rm -rf node_modules
+          npm install
           # Temporarily skip TypeScript errors during build
           tsc --noEmit || echo "TypeScript check failed, but continuing with build"
           npx vite build
