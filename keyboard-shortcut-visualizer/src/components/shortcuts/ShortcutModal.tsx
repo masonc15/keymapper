@@ -56,6 +56,7 @@ interface ShortcutModalProps {
   shortcut?: Shortcut; // Optional, for editing existing shortcuts
   keyId?: string; // Optional, for adding a shortcut to a specific key
   onSuccess?: () => void; // Callback for when a shortcut is successfully added/updated
+  isMobile?: boolean; // Whether we're on a mobile device
 }
 
 export const ShortcutModal: React.FC<ShortcutModalProps> = ({
@@ -64,6 +65,7 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
   shortcut,
   keyId,
   onSuccess,
+  isMobile = false,
 }) => {
   const { checkForConflicts, addShortcut, updateShortcut } = useShortcuts();
   const applications = useApplications();
@@ -271,8 +273,8 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+      <DialogContent className={`${isMobile ? 'w-[95vw] p-4' : 'sm:max-w-[425px]'}`}>
+        <DialogHeader className={isMobile ? 'mb-2 space-y-1' : ''}>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {isEditing
@@ -311,19 +313,19 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
             <FormField
               control={form.control}
               name="application"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Application</FormLabel>
+                <FormItem className={isMobile ? 'space-y-1.5' : ''}>
+                  <FormLabel className={isMobile ? 'text-sm' : ''}>Application</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input 
                         list="app-suggestions"
                         placeholder="e.g., Chrome, VSCode" 
-                        className={getFieldClasses('application')}
+                        className={`${getFieldClasses('application')} ${isMobile ? 'h-9 text-sm' : ''}`}
                         {...field} 
                         disabled={isSubmitting}
                       />
@@ -338,8 +340,8 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
                         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-amber-500">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
+                            width={isMobile ? "14" : "16"}
+                            height={isMobile ? "14" : "16"}
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -355,7 +357,7 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
                       )}
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className={isMobile ? 'text-xs' : ''} />
                 </FormItem>
               )}
             />
@@ -364,16 +366,17 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
               control={form.control}
               name="description"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
+                <FormItem className={isMobile ? 'space-y-1.5' : ''}>
+                  <FormLabel className={isMobile ? 'text-sm' : ''}>Description</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="e.g., Open a new tab" 
+                      className={isMobile ? 'h-9 text-sm' : ''}
                       {...field} 
                       disabled={isSubmitting}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className={isMobile ? 'text-xs' : ''} />
                 </FormItem>
               )}
             />
@@ -382,11 +385,11 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
               control={form.control}
               name="key_combination"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
+                <FormItem className={isMobile ? 'space-y-1.5' : ''}>
+                  <FormLabel className={isMobile ? 'text-sm' : ''}>
                     Shortcut Key Combination
                     {hasFieldConflict('key_combination') && (
-                      <span className="ml-2 text-amber-500 text-xs font-normal">
+                      <span className={`ml-2 text-amber-500 ${isMobile ? 'text-[10px]' : 'text-xs'} font-normal`}>
                         • Conflict detected
                       </span>
                     )}
@@ -398,25 +401,28 @@ export const ShortcutModal: React.FC<ShortcutModalProps> = ({
                       error={!!form.formState.errors.key_combination}
                       warning={hasFieldConflict('key_combination')}
                       disabled={isSubmitting || !!keyId} // Disable if we're adding for a specific key
+                      isMobile={isMobile}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className={isMobile ? 'text-xs' : ''} />
                 </FormItem>
               )}
             />
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className={`gap-2 sm:gap-0 ${isMobile ? 'flex-col sm:flex-col mt-4' : ''}`}>
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
+                className={isMobile ? 'w-full sm:w-full h-10' : ''}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit"
                 disabled={isSubmitting || !form.formState.isValid}
+                className={isMobile ? 'w-full sm:w-full h-10' : ''}
               >
                 {isSubmitting 
                   ? 'Saving...' 

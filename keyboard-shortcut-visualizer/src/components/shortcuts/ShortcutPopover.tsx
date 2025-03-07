@@ -17,6 +17,7 @@ interface ShortcutPopoverProps {
   keyId: string;
   keyLabel: string;
   onSuccess?: () => void; // Callback for when a shortcut is successfully added/edited/deleted
+  isMobile?: boolean;
 }
 
 interface ShortcutsByApp {
@@ -29,6 +30,7 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
   keyId,
   keyLabel,
   onSuccess,
+  isMobile = false,
 }) => {
   const { shortcuts, deleteShortcut, findShortcutsByBaseKey } = useShortcuts();
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -137,8 +139,8 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
         <PopoverTrigger className="hidden">Open</PopoverTrigger>
         <PopoverContent 
           ref={popoverRef}
-          className="w-80 p-0 overflow-hidden"
-          side="top"
+          className={`${isMobile ? 'w-full max-w-[90vw]' : 'w-80'} p-0 overflow-hidden`}
+          side={isMobile ? "bottom" : "top"}
           align="center"
           sideOffset={5}
           onEscapeKeyDown={onClose}
@@ -155,9 +157,9 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
             </p>
           </div>
 
-          <div className="max-h-[300px] overflow-y-auto">
+          <div className={`${isMobile ? 'max-h-[40vh]' : 'max-h-[300px]'} overflow-y-auto`}>
             {Object.entries(groupedShortcuts).map(([app, appShortcuts]) => (
-              <div key={app} className="p-3">
+              <div key={app} className={`${isMobile ? 'p-2' : 'p-3'}`}>
                 <h4 className="text-xs font-semibold text-gray-500 mb-1">
                   {app}
                 </h4>
@@ -167,13 +169,14 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
                     shortcut={shortcut}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    isMobile={isMobile}
                   />
                 ))}
               </div>
             ))}
 
             {keyShortcuts.length === 0 && (
-              <div className="p-4 text-center text-gray-500">
+              <div className={`${isMobile ? 'p-3' : 'p-4'} text-center text-gray-500`}>
                 <p className="mb-2">No shortcuts are assigned to this key.</p>
               </div>
             )}
@@ -213,6 +216,7 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
         onClose={() => setIsAddModalOpen(false)}
         keyId={keyId}
         onSuccess={handleOperationSuccess}
+        isMobile={isMobile}
       />
       
       {/* Edit Modal */}
@@ -221,6 +225,7 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
         onClose={() => setIsEditModalOpen(false)}
         shortcut={selectedShortcut || undefined}
         onSuccess={handleOperationSuccess}
+        isMobile={isMobile}
       />
       
       {/* Delete Confirmation Dialog */}
@@ -230,6 +235,7 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
         shortcut={selectedShortcut}
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
+        isMobile={isMobile}
       />
     </>
   );
