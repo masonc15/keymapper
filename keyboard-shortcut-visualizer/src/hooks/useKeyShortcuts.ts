@@ -3,6 +3,7 @@ import { useShortcuts } from './useShortcuts';
 import { Shortcut } from '@/types/shortcut';
 import { generateAppColor } from '@/utils/colorUtils';
 import { getBaseKeyFromKeyId } from '@/utils/keyboardUtils';
+import { checkForKeyConflicts } from '@/utils/conflictUtils';
 
 interface ShortcutsByApp {
   [app: string]: Shortcut[];
@@ -14,6 +15,7 @@ interface KeyShortcutsResult {
   hasShortcuts: boolean;
   uniqueApps: string[];
   appColors: Record<string, string>;
+  hasConflicts: boolean;
 }
 
 /**
@@ -22,11 +24,19 @@ interface KeyShortcutsResult {
  * @returns Object containing shortcuts and helper methods
  */
 export function useKeyShortcuts(keyId: string): KeyShortcutsResult {
-  const { findShortcutsByBaseKey } = useShortcuts();
+  const { findShortcutsByBaseKey, shortcuts: allShortcuts } = useShortcuts();
   
   // Get all shortcuts associated with this key
   const baseKey = getBaseKeyFromKeyId(keyId);
   const shortcuts = useMemo(() => findShortcutsByBaseKey(baseKey), [baseKey, findShortcutsByBaseKey]);
+  
+  // Check if the key has any conflicts between shortcuts
+  const hasConflicts = useMemo(() => {
+    if (shortcuts.length <= 1) return false;
+    
+    // Check all shortcuts on this key for conflicts with each other
+    return checkForKeyConflicts(shortcuts);
+  }, [shortcuts]);
   
   // Group shortcuts by application
   const shortcutsByApp = useMemo(() => {
@@ -57,5 +67,6 @@ export function useKeyShortcuts(keyId: string): KeyShortcutsResult {
     hasShortcuts: shortcuts.length > 0,
     uniqueApps,
     appColors,
+    hasConflicts,
   };
 }

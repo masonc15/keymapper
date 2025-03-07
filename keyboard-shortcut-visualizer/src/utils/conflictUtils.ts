@@ -151,3 +151,43 @@ export function getConflictSeverityClass(severity: 'error' | 'warning' | 'info')
       return 'bg-blue-50 border-blue-200 text-blue-600';
   }
 }
+
+/**
+ * Check for conflicts between shortcuts on the same key
+ * 
+ * @param shortcuts - List of shortcuts for a specific key
+ * @returns True if any conflicts are found, false otherwise
+ */
+export function checkForKeyConflicts(shortcuts: Shortcut[]): boolean {
+  if (shortcuts.length <= 1) return false;
+  
+  // Check for conflicting application shortcuts
+  // (same key combination within the same application)
+  const appShortcuts = new Map<string, Shortcut[]>();
+  
+  // Group shortcuts by application
+  for (const shortcut of shortcuts) {
+    const app = shortcut.application.toLowerCase();
+    if (!appShortcuts.has(app)) {
+      appShortcuts.set(app, []);
+    }
+    appShortcuts.get(app)!.push(shortcut);
+  }
+  
+  // Check for multiple shortcuts in the same application
+  for (const [app, shortcuts] of appShortcuts.entries()) {
+    if (shortcuts.length > 1) {
+      return true; // Conflict found within the same application
+    }
+  }
+  
+  // Check for global shortcuts that might conflict with app-specific ones
+  const hasGlobalShortcuts = appShortcuts.has('global') || 
+                             appShortcuts.has('system');
+  
+  if (hasGlobalShortcuts && appShortcuts.size > 1) {
+    return true; // Global shortcuts might conflict with app-specific ones
+  }
+  
+  return false;
+}
