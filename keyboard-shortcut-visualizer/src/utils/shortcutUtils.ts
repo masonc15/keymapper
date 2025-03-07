@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Shortcut } from '../types/shortcut';
-import { parseKeyCombination, formatKeyCombination } from './keyboardUtils';
+import { Shortcut } from '@/types/shortcut';
+import { parseKeyCombination, formatKeyCombination } from '@/utils/keyboardUtils';
 
 /**
  * Generates a unique ID for a new shortcut

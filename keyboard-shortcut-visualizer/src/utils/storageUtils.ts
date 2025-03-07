@@ -1,5 +1,5 @@
-import { Shortcut } from '../types/shortcut';
-import { generateShortcutId, processShortcut } from './shortcutUtils';
+import { Shortcut } from '@/types/shortcut';
+import { generateShortcutId, processShortcut } from '@/utils/shortcutUtils';
 
 const STORAGE_KEY = 'keyboard-shortcuts';
 
