@@ -6,6 +6,9 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   base: '/keymapper/',
+  build: {
+    outDir: 'docs', // Output to docs folder for GitHub Pages
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
