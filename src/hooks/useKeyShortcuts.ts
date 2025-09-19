@@ -24,7 +24,7 @@ interface KeyShortcutsResult {
  * @returns Object containing shortcuts and helper methods
  */
 export function useKeyShortcuts(keyId: string): KeyShortcutsResult {
-  const { findShortcutsByBaseKey, shortcuts: allShortcuts } = useShortcuts();
+  const { findShortcutsByBaseKey } = useShortcuts();
   
   // Get all shortcuts associated with this key
   const baseKey = getBaseKeyFromKeyId(keyId);

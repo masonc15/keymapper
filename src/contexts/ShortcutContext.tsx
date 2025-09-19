@@ -55,7 +55,7 @@ export const ShortcutContext = createContext<ShortcutContextValue>({
     success: false, 
     error: 'Not implemented' 
   }),
-  updateShortcut: async (shortcut) => ({ 
+  updateShortcut: async (_shortcut) => ({
     success: false, 
     error: 'Not implemented'
   }),
@@ -184,9 +184,16 @@ export const ShortcutProvider: React.FC<ShortcutProviderProps> = ({ children }) 
   ): Promise<ShortcutOperationResult<Shortcut>> => {
     try {
       // Process the shortcut to extract baseKey and modifiers if they're not already set
-      const processedShortcut = shortcut.baseKey && shortcut.modifiers 
-        ? shortcut 
-        : processShortcut(shortcut);
+      const processedShortcut: Shortcut = shortcut.baseKey && shortcut.modifiers
+        ? shortcut
+        : {
+            ...processShortcut({
+              key_combination: shortcut.key_combination,
+              application: shortcut.application,
+              description: shortcut.description,
+            }),
+            id: shortcut.id,
+          };
       
       // Check for conflicts, excluding the current shortcut
       const conflict = checkForConflicts(processedShortcut, shortcut.id);

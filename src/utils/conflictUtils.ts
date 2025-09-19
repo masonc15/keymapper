@@ -175,8 +175,8 @@ export function checkForKeyConflicts(shortcuts: Shortcut[]): boolean {
   }
   
   // Check for multiple shortcuts in the same application
-  for (const [app, shortcuts] of appShortcuts.entries()) {
-    if (shortcuts.length > 1) {
+  for (const shortcutsForApp of appShortcuts.values()) {
+    if (shortcutsForApp.length > 1) {
       return true; // Conflict found within the same application
     }
   }

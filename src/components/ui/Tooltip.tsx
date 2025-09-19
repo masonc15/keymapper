@@ -30,7 +30,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const [arrowStyle, setArrowStyle] = useState<React.CSSProperties>({});
   const childRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [computedPosition, setComputedPosition] = useState(position);
   
   // Check if user prefers reduced motion

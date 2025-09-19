@@ -1,4 +1,4 @@
-import { Key, KeyboardLayout, KeyRow } from '../types/keyboard';
+import { KeyboardLayout, KeyRow } from '../types/keyboard';
 
 // ==============================================
 // Standard Desktop/Tablet Layout (Full Keyboard)
@@ -118,7 +118,7 @@ const bottomRow: KeyRow = {
     { id: 'command-right', label: 'command', size: 'medium', type: 'modifier', width: 1.25 },
     { id: 'option-right', label: 'option', size: 'medium', type: 'modifier', width: 1.25 },
     { id: 'left', label: '←', size: 'default', type: 'navigation' },
-    { id: 'up-down', keys: [
+    { id: 'up-down', label: '↕', keys: [
       { id: 'up', label: '↑', size: 'small', type: 'navigation', height: 0.5 },
       { id: 'down', label: '↓', size: 'small', type: 'navigation', height: 0.5 }
     ], size: 'default', type: 'navigation' },

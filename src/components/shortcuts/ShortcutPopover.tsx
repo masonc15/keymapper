@@ -32,7 +32,7 @@ export const ShortcutPopover: React.FC<ShortcutPopoverProps> = ({
   onSuccess,
   isMobile = false,
 }) => {
-  const { shortcuts, deleteShortcut, findShortcutsByBaseKey } = useShortcuts();
+  const { deleteShortcut, findShortcutsByBaseKey } = useShortcuts();
   const popoverRef = useRef<HTMLDivElement>(null);
   
   // States for modal visibility

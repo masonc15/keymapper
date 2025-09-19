@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { keyEventToKeyCombo, isValidKeyCombination } from '@/utils/keyboardUtils';
+import { keyEventToKeyCombo } from '@/utils/keyboardUtils';
 import { cn } from '@/lib/utils';
 
 interface KeyCombinationInputProps {
