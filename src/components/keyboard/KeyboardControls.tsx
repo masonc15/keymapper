@@ -1,8 +1,6 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { ZoomIn, ZoomOut, RefreshCw, Filter, X, Layers, Badge } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Tooltip } from '@/components/ui/Tooltip';
 import { useApplications } from '@/hooks/useApplications';
 
 export type KeyboardHighlightMode = 'none' | 'heatmap' | 'focus';
@@ -27,347 +25,224 @@ export function KeyboardControls({
   isMobile = false,
 }: KeyboardControlsProps) {
   const applications = useApplications();
-  
-  // Calculate min and max zoom levels
+
   const minZoom = 0.6;
   const maxZoom = 1.4;
   const zoomStep = 0.1;
-  
-  // Check if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
-  // Handle zoom in
+  const zoomPercentage = Math.round(zoomLevel * 100);
+  const zoomFill = Math.min(100, Math.max(0, zoomPercentage));
+
+  const hasActiveFilter = selectedApplication || highlightMode !== 'none';
+
+  const paletteClass = cn(
+    'relative rounded-2xl border border-white/15 bg-white/5 p-4 shadow-[0_20px_55px_rgba(8,47,73,0.45)] backdrop-blur',
+    isMobile ? 'space-y-4' : 'space-y-5'
+  );
+
+  const controlButtonClass = (active?: boolean) =>
+    cn(
+      'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60',
+      active
+        ? 'border-sky-400/60 bg-gradient-to-r from-sky-500/60 to-cyan-400/60 text-white shadow-[0_12px_30px_rgba(56,189,248,0.35)]'
+        : 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'
+    );
+
+  const iconButtonClass = (disabled?: boolean) =>
+    cn(
+      'flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-slate-200 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60',
+      disabled && 'cursor-not-allowed opacity-40 hover:bg-transparent'
+    );
+
+  const highlightOptions = useMemo(
+    () => [
+      { mode: 'focus' as KeyboardHighlightMode, label: 'Focus mode', icon: Layers },
+      { mode: 'heatmap' as KeyboardHighlightMode, label: 'Heat map', icon: Badge },
+    ],
+    []
+  );
+
   const handleZoomIn = () => {
     if (zoomLevel < maxZoom) {
       onZoomChange(Math.min(zoomLevel + zoomStep, maxZoom));
     }
   };
-  
-  // Handle zoom out
+
   const handleZoomOut = () => {
     if (zoomLevel > minZoom) {
       onZoomChange(Math.max(zoomLevel - zoomStep, minZoom));
     }
   };
-  
-  // Handle zoom reset
+
   const handleZoomReset = () => {
     onZoomChange(1);
   };
-  
-  // Handle application filter change
+
   const handleApplicationChange = (appName: string) => {
     onApplicationChange(appName === selectedApplication ? '' : appName);
   };
-  
-  // Handle highlight mode change
-  const handleHighlightModeChange = (mode: KeyboardHighlightMode) => {
-    onHighlightModeChange(mode === highlightMode ? 'none' : mode);
+
+  const renderApplicationChips = () => (
+    <div className="-m-1 flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
+      {applications.length === 0 ? (
+        <span className="m-1 text-xs text-slate-400/80">Add shortcuts to unlock filtering</span>
+      ) : (
+        applications.map((app) => (
+          <button
+            key={app.name}
+            onClick={() => handleApplicationChange(app.name)}
+            className={controlButtonClass(selectedApplication === app.name)}
+            style={
+              selectedApplication === app.name
+                ? { boxShadow: `0 0 0 1px ${app.color}` }
+                : undefined
+            }
+            aria-pressed={selectedApplication === app.name}
+          >
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: app.color }} />
+            {app.name}
+          </button>
+        ))
+      )}
+    </div>
+  );
+
+  const renderHighlightChips = () => (
+    <div className="flex flex-wrap items-center gap-2">
+      {highlightOptions.map(({ mode, label, icon: Icon }) => (
+        <button
+          key={mode}
+          onClick={() => onHighlightModeChange(mode === highlightMode ? 'none' : mode)}
+          className={controlButtonClass(highlightMode === mode)}
+          aria-pressed={highlightMode === mode}
+        >
+          <Icon className="h-4 w-4" />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  const zoomMeterStyle = {
+    background: `linear-gradient(90deg, rgba(56,189,248,0.45) 0%, rgba(59,130,246,0.55) ${zoomFill}%, rgba(15,23,42,0.85) ${zoomFill}%, rgba(15,23,42,0.85) 100%)`,
   };
-  
-  // Render zoom percentage
-  const zoomPercentage = Math.round(zoomLevel * 100);
-  
-  // Render mobile-optimized controls
+
   if (isMobile) {
     return (
-      <div className="flex flex-col gap-2 mb-4">
-        {/* Combined zoom and filter controls - more compact for mobile */}
-        <div className="grid grid-cols-2 items-center gap-2">
-          {/* Zoom controls */}
-          <div className="flex items-center justify-between gap-1 p-2 bg-gray-50 rounded-md border border-gray-200">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleZoomOut} 
+      <div className={paletteClass}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleZoomOut}
               disabled={zoomLevel <= minZoom}
-              className="h-9 w-9"
+              className={iconButtonClass(zoomLevel <= minZoom)}
               aria-label="Zoom out"
             >
-              <ZoomOut size={18} />
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleZoomReset} 
-              disabled={zoomLevel === 1}
-              className="h-9 px-2 text-sm"
-              aria-label="Reset zoom"
-            >
-              {zoomPercentage}%
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleZoomIn} 
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            <div className="relative flex h-10 w-28 items-center justify-center overflow-hidden rounded-full border border-white/15 text-sm font-semibold text-sky-100" style={zoomMeterStyle}>
+              <span className="relative z-10 mix-blend-screen">{zoomPercentage}%</span>
+            </div>
+            <button
+              onClick={handleZoomIn}
               disabled={zoomLevel >= maxZoom}
-              className="h-9 w-9"
+              className={iconButtonClass(zoomLevel >= maxZoom)}
               aria-label="Zoom in"
             >
-              <ZoomIn size={18} />
-            </Button>
+              <ZoomIn className="h-4 w-4" />
+            </button>
           </div>
-          
-          {/* Mode/filter controls */}
-          <div className="flex items-center justify-between gap-1 p-2 bg-gray-50 rounded-md border border-gray-200">
-            <Button 
-              variant={highlightMode === 'focus' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => handleHighlightModeChange('focus')}
-              className={cn(
-                "h-9 px-2",
-                highlightMode === 'focus' && "bg-blue-600"
-              )}
-              aria-label={highlightMode === 'focus' ? 'Disable focus mode' : 'Enable focus mode'}
-            >
-              <Layers size={18} />
-            </Button>
-            
-            {/* Filter button shows/hides the app filters */}
-            <Button 
-              variant={selectedApplication ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                // Simple toggle for mobile - if there's already a filter, clear it
-                if (selectedApplication) {
-                  onApplicationChange('');
-                }
-              }}
-              className={cn(
-                "h-9 px-2",
-                selectedApplication && "bg-blue-600"
-              )}
-              aria-label={selectedApplication ? 'Clear application filter' : 'Filter by application'}
-            >
-              <Filter size={18} />
-            </Button>
-            
-            {/* Clear all button */}
-            {(selectedApplication || highlightMode !== 'none') && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
-                  onApplicationChange('');
-                  onHighlightModeChange('none');
-                }}
-                className="h-9 w-9"
-                aria-label="Clear all filters"
-              >
-                <X size={18} />
-              </Button>
-            )}
-          </div>
+          <button
+            onClick={handleZoomReset}
+            className={controlButtonClass(false)}
+            aria-label="Reset zoom"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Reset
+          </button>
         </div>
-        
-        {/* Simplified app filter for mobile - only show top apps with bigger touch targets */}
-        {!selectedApplication && (
-          <div className="flex flex-wrap gap-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-            {applications.slice(0, 6).map((app) => (
-              <Button
-                key={app.name}
-                variant="outline"
-                size="sm"
-                onClick={() => handleApplicationChange(app.name)}
-                className={cn(
-                  "h-8 px-3 text-sm rounded-full transition-all",
-                  selectedApplication === app.name ? 
-                    "bg-gray-800 text-white border-transparent" : 
-                    "bg-white hover:bg-gray-100"
-                )}
-                style={
-                  selectedApplication === app.name ? 
-                    { backgroundColor: app.color } : 
-                    {}
-                }
-              >
-                {app.name}
-              </Button>
-            ))}
-          </div>
-        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200">
+            <Filter className="h-3.5 w-3.5" />
+            Filter by app
+          </span>
+          {hasActiveFilter && (
+            <button
+              onClick={() => {
+                onApplicationChange('');
+                onHighlightModeChange('none');
+              }}
+              className={controlButtonClass(false)}
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </button>
+          )}
+        </div>
+
+        {renderApplicationChips()}
+        {renderHighlightChips()}
       </div>
     );
   }
-  
-  // Standard desktop controls
+
   return (
-    <div className="flex flex-col gap-2 mb-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-        {/* Zoom controls */}
-        <div className="flex items-center gap-1">
-          <Tooltip 
-            content="Zoom out" 
-            position="top" 
-            showArrow 
-            theme="light"
+    <div className={paletteClass}>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleZoomOut}
+            disabled={zoomLevel <= minZoom}
+            className={iconButtonClass(zoomLevel <= minZoom)}
+            aria-label="Zoom out"
           >
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleZoomOut} 
-              disabled={zoomLevel <= minZoom}
-              className="h-7 w-7"
-              aria-label="Zoom out"
-            >
-              <ZoomOut size={16} />
-            </Button>
-          </Tooltip>
-          
-          <Tooltip 
-            content="Reset zoom" 
-            position="top" 
-            showArrow 
-            theme="light"
+            <ZoomOut className="h-4 w-4" />
+          </button>
+          <div className="relative flex h-12 w-32 items-center justify-center overflow-hidden rounded-full border border-white/15 text-sm font-semibold text-sky-100" style={zoomMeterStyle}>
+            <span className="relative z-10 mix-blend-screen">{zoomPercentage}%</span>
+          </div>
+          <button
+            onClick={handleZoomIn}
+            disabled={zoomLevel >= maxZoom}
+            className={iconButtonClass(zoomLevel >= maxZoom)}
+            aria-label="Zoom in"
           >
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleZoomReset} 
-              disabled={zoomLevel === 1}
-              className="h-7 px-2 text-xs"
-              aria-label="Reset zoom"
-            >
-              {zoomPercentage}%
-            </Button>
-          </Tooltip>
-          
-          <Tooltip 
-            content="Zoom in" 
-            position="top" 
-            showArrow 
-            theme="light"
+            <ZoomIn className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className={controlButtonClass(false)}
+            aria-label="Reset zoom"
           >
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleZoomIn} 
-              disabled={zoomLevel >= maxZoom}
-              className="h-7 w-7"
-              aria-label="Zoom in"
-            >
-              <ZoomIn size={16} />
-            </Button>
-          </Tooltip>
+            <RefreshCw className="h-4 w-4" />
+            Reset
+          </button>
         </div>
-        
-        {/* Mode toggles */}
-        <div className="flex items-center gap-1">
-          <Tooltip 
-            content={highlightMode === 'heatmap' ? 'Disable heatmap view' : 'Enable heatmap view'} 
-            position="top" 
-            showArrow 
-            theme="light"
-          >
-            <Button 
-              variant={highlightMode === 'heatmap' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => handleHighlightModeChange('heatmap')}
-              className={cn(
-                "h-7 gap-1",
-                highlightMode === 'heatmap' && "bg-blue-600"
-              )}
-              aria-label={highlightMode === 'heatmap' ? 'Disable heatmap view' : 'Enable heatmap view'}
+
+        <div className="flex items-center gap-2">
+          {renderHighlightChips()}
+          {hasActiveFilter && (
+            <button
+              onClick={() => {
+                onApplicationChange('');
+                onHighlightModeChange('none');
+              }}
+              className={controlButtonClass(false)}
             >
-              <Badge size={14} />
-              <span className="text-xs">Heatmap</span>
-            </Button>
-          </Tooltip>
-          
-          <Tooltip 
-            content={highlightMode === 'focus' ? 'Disable focus mode' : 'Enable focus mode'} 
-            position="top" 
-            showArrow 
-            theme="light"
-          >
-            <Button 
-              variant={highlightMode === 'focus' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => handleHighlightModeChange('focus')}
-              className={cn(
-                "h-7 gap-1",
-                highlightMode === 'focus' && "bg-blue-600"
-              )}
-              aria-label={highlightMode === 'focus' ? 'Disable focus mode' : 'Enable focus mode'}
-            >
-              <Layers size={14} />
-              <span className="text-xs">Focus</span>
-            </Button>
-          </Tooltip>
-        </div>
-        
-        {/* Clear filters button - only shown when filters are active */}
-        {(selectedApplication || highlightMode !== 'none') && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              onApplicationChange('');
-              onHighlightModeChange('none');
-            }}
-            className="h-7 gap-1 text-xs"
-            aria-label="Clear all filters"
-          >
-            <X size={14} />
-            <span>Clear All</span>
-          </Button>
-        )}
-      </div>
-      
-      {/* Application filters */}
-      <div className="flex flex-wrap gap-1 max-h-[80px] overflow-y-auto p-2 bg-gray-50 rounded-md border border-gray-200">
-        <span className="text-xs text-gray-500 font-medium w-full mb-1" id="app-filter-label">Filter by application:</span>
-        <div className="flex flex-wrap gap-1" role="group" aria-labelledby="app-filter-label">
-          {applications.map((app) => (
-            <Button
-              key={app.name}
-              variant="outline"
-              size="sm"
-              onClick={() => handleApplicationChange(app.name)}
-              className={cn(
-                "h-6 px-2 text-xs rounded-full transition-all",
-                selectedApplication === app.name ? 
-                  "bg-gray-800 text-white border-transparent" : 
-                  "bg-white hover:bg-gray-100"
-              )}
-              style={
-                selectedApplication === app.name ? 
-                  { backgroundColor: app.color } : 
-                  {}
-              }
-              aria-pressed={selectedApplication === app.name}
-            >
-              {app.name}
-            </Button>
-          ))}
+              <X className="h-4 w-4" />
+              Clear
+            </button>
+          )}
         </div>
       </div>
-      
-      {/* Heatmap legend - only shown in heatmap mode */}
-      {highlightMode === 'heatmap' && (
-        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md border border-gray-200" 
-             aria-labelledby="heatmap-legend-label">
-          <span className="text-xs text-gray-500 font-medium" id="heatmap-legend-label">Usage intensity:</span>
-          <div className="flex-1 h-4 rounded overflow-hidden" 
-            style={{ 
-              background: 'linear-gradient(to right, hsl(215, 95%, 93%), hsl(215, 95%, 70%)' 
-            }}
-            role="img"
-            aria-label="Low usage gradient"
-          />
-          <span className="text-xs text-gray-500">Low</span>
-          <div className="flex-1 h-4 rounded overflow-hidden" 
-            style={{ 
-              background: 'linear-gradient(to right, hsl(215, 95%, 70%), hsl(215, 95%, 50%)' 
-            }}
-            role="img"
-            aria-label="High usage gradient"
-          />
-          <span className="text-xs text-gray-500">High</span>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-300/80">
+          <Filter className="h-4 w-4" />
+          Applications
         </div>
-      )}
+        {renderApplicationChips()}
+      </div>
     </div>
   );
 }

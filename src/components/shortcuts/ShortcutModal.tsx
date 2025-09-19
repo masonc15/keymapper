@@ -26,7 +26,6 @@ import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 import { useShortcuts } from '@/hooks/useShortcuts';
 import { useApplications } from '@/hooks/useApplications';
-import { processShortcut } from '@/utils/shortcutUtils';
 import { ConflictType, ShortcutConflict } from '@/utils/conflictUtils';
 import { OverrideOptions } from '@/contexts/ShortcutContext';
 

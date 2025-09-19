@@ -336,7 +336,7 @@ export const Key = ({
   };
 
   // For composite keys (like up-down arrow keys)
-  if (id === 'up-down' && 'keys' in keyData) {
+  if (id === 'up-down' && Array.isArray(keyData.keys)) {
     return (
       <div 
         className="flex flex-col" 

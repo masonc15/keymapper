@@ -24,11 +24,12 @@ export function sortShortcuts(
   shortcuts: Shortcut[],
   sortConfig: SortConfig
 ): Shortcut[] {
-  if (!sortConfig.column) return shortcuts;
+  const { column } = sortConfig;
+  if (!column) return shortcuts;
 
   return [...shortcuts].sort((a, b) => {
-    const aValue = a[sortConfig.column] as string;
-    const bValue = b[sortConfig.column] as string;
+    const aValue = String(a[column] ?? '');
+    const bValue = String(b[column] ?? '');
 
     if (aValue < bValue) {
       return sortConfig.direction === 'asc' ? -1 : 1;

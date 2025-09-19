@@ -1,9 +1,9 @@
 import React from 'react';
-import { Search, PlusCircle, X } from 'lucide-react';
+import { Search, PlusCircle, X, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useApplications } from '@/hooks/useApplications';
 import { TableFilters } from '@/utils/tableUtils';
+import { cn } from '@/lib/utils';
 
 interface TableHeaderProps {
   filters: TableFilters;
@@ -11,7 +11,6 @@ interface TableHeaderProps {
   onAddShortcut: () => void;
   totalShortcuts: number;
   filteredCount: number;
-  isMobile?: boolean;
 }
 
 export function TableHeader({
@@ -23,7 +22,6 @@ export function TableHeader({
 }: TableHeaderProps) {
   const applications = useApplications();
 
-  // Update search filter
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({
       ...filters,
@@ -31,95 +29,99 @@ export function TableHeader({
     });
   };
 
-  // Update application filter
-  const handleApplicationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleApplicationToggle = (appName: string) => {
     onFilterChange({
       ...filters,
-      application: e.target.value,
+      application: filters.application === appName ? '' : appName,
     });
   };
 
-  // Clear all filters
-  const handleClearFilters = () => {
-    onFilterChange({
-      search: '',
-      application: '',
-    });
-  };
+  const hasActiveFilters = Boolean(filters.search || filters.application);
 
-  // Check if any filters are active
-  const hasActiveFilters = filters.search || filters.application;
+  const filterCopy = hasActiveFilters
+    ? `Showing ${filteredCount} of ${totalShortcuts} shortcuts` +
+      (filters.application ? ` for ${filters.application}` : '') +
+      (filters.search ? ` matching “${filters.search}”` : '')
+    : `${totalShortcuts} shortcuts available`;
+
+  const pillClass = (active: boolean) =>
+    cn(
+      'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60',
+      active
+        ? 'border-sky-400/60 bg-gradient-to-r from-sky-500/60 to-indigo-500/60 text-white shadow-[0_12px_35px_rgba(79,70,229,0.35)]'
+        : 'border-white/15 bg-white/5 text-slate-200 hover:bg-white/10'
+    );
 
   return (
-    <div className="mb-4 space-y-4">
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <div className="flex-1 flex flex-col sm:flex-row gap-2 sm:items-center">
-          {/* Search input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex-1 space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               type="text"
-              placeholder="Search shortcuts..."
+              placeholder="Search the shortcut library"
               value={filters.search}
               onChange={handleSearchChange}
-              className="pl-9 w-full"
+              className="h-12 rounded-full border-white/20 bg-white/5 pl-11 pr-12 text-sm text-slate-100 placeholder:text-slate-400/70"
             />
             {filters.search && (
               <button
                 onClick={() => onFilterChange({ ...filters, search: '' })}
-                className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors hover:text-white"
                 aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-
-          {/* Application filter */}
-          <select
-            value={filters.application}
-            onChange={handleApplicationChange}
-            className="h-10 px-3 py-2 rounded-md border border-input bg-background text-sm sm:w-auto w-full"
-            aria-label="Filter by application"
-          >
-            <option value="">All Applications</option>
-            {applications.map((app) => (
-              <option key={app.name} value={app.name}>
-                {app.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Clear filters button - only shown when filters are active */}
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearFilters}
-              className="whitespace-nowrap"
-            >
-              Clear Filters
-            </Button>
-          )}
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-slate-300/80">
+            <Sparkles className="h-4 w-4" />
+            {filterCopy}
+          </div>
         </div>
 
-        {/* Add shortcut button */}
-        <Button onClick={onAddShortcut} className="whitespace-nowrap">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Shortcut
-        </Button>
+        <button
+          onClick={onAddShortcut}
+          className="inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_20px_45px_rgba(56,189,248,0.35)] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        >
+          <PlusCircle className="h-4 w-4" />
+          New shortcut
+        </button>
       </div>
 
-      {/* Filter status */}
-      <div className="text-sm text-muted-foreground">
-        {hasActiveFilters ? (
-          <p>
-            Showing {filteredCount} of {totalShortcuts} shortcuts
-            {filters.application && ` for ${filters.application}`}
-            {filters.search && ` matching "${filters.search}"`}
-          </p>
-        ) : (
-          <p>{totalShortcuts} shortcuts total</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs uppercase tracking-wider text-slate-300/80">Filter by app:</span>
+        <button
+          onClick={() => onFilterChange({ ...filters, application: '' })}
+          className={pillClass(!filters.application)}
+        >
+          All
+        </button>
+        {applications.map((app) => (
+          <button
+            key={app.name}
+            onClick={() => handleApplicationToggle(app.name)}
+            className={pillClass(filters.application === app.name)}
+            style={
+              filters.application === app.name
+                ? { boxShadow: `0 0 0 1px ${app.color}` }
+                : undefined
+            }
+            aria-pressed={filters.application === app.name}
+          >
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: app.color }} />
+            {app.name}
+          </button>
+        ))}
+        {hasActiveFilters && (
+          <button
+            onClick={() => onFilterChange({ search: '', application: '' })}
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition-colors hover:bg-white/10"
+          >
+            <X className="h-3.5 w-3.5" />
+            Reset
+          </button>
         )}
       </div>
     </div>
